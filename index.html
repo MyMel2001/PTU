@@ -417,11 +417,17 @@ reader.readAsText(file);
 
 
 // Basic HTML importer
-
 function htmlToMarkdown(html){
 
-    let div = document.createElement("div");
-    div.innerHTML = html;
+    let parser = new DOMParser();
+
+    let doc = parser.parseFromString(
+        html,
+        "text/html"
+    );
+
+    // Only import the actual page content
+    let root = doc.body;
 
 
     function convert(node){
@@ -452,25 +458,20 @@ function htmlToMarkdown(html){
             case "h3":
                 return "\n### " + content.trim() + "\n";
 
-
             case "strong":
             case "b":
                 return "**" + content + "**";
-
 
             case "em":
             case "i":
                 return "*" + content + "*";
 
-
             case "u":
                 return "<u>" + content + "</u>";
-
 
             case "del":
             case "s":
                 return "~~" + content + "~~";
-
 
             case "a":
                 return "[" +
@@ -479,7 +480,6 @@ function htmlToMarkdown(html){
                     node.href +
                     ")";
 
-
             case "img":
                 return "![" +
                     (node.alt || "") +
@@ -487,33 +487,26 @@ function htmlToMarkdown(html){
                     node.src +
                     ")";
 
-
             case "code":
                 return "`" + content + "`";
-
 
             case "pre":
                 return "\n```\n" +
                     content +
                     "\n```\n";
 
-
             case "li":
                 return "\n- " + content;
-
 
             case "br":
                 return "\n";
 
-
             case "p":
                 return "\n" + content + "\n";
-
 
             case "ul":
             case "ol":
                 return content + "\n";
-
 
             default:
                 return content;
@@ -521,7 +514,7 @@ function htmlToMarkdown(html){
     }
 
 
-    return convert(div)
+    return convert(root)
         .replace(/\n{3,}/g,"\n\n")
         .trim();
 
