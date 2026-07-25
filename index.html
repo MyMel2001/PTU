@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PTU 1.0</title>
+
+<style>
+:root {
+    --bg: #1e1e1e;
+    --panel: #252526;
+    --text: #ddd;
+    --accent: #4da3ff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+header {
+    padding: 10px;
+    background: #111;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+h1 {
+    font-size: 18px;
+    margin-right: auto;
+}
+
+button {
+    background: var(--panel);
+    border: 1px solid #555;
+    color: white;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: var(--accent);
+}
+
+#toolbar {
+    padding: 8px;
+    background: #181818;
+    display:flex;
+    gap:5px;
+    flex-wrap:wrap;
+}
+
+main {
+    flex:1;
+    display:flex;
+    min-height:0;
+}
+
+textarea,
+#preview {
+    width:50%;
+    height:100%;
+    padding:20px;
+    overflow:auto;
+}
+
+textarea {
+    background:#111;
+    color:#eee;
+    border:none;
+    resize:none;
+    font-family:monospace;
+    font-size:16px;
+    outline:none;
+}
+
+#preview {
+    background:white;
+    color:black;
+}
+
+code {
+    background:#eee;
+    padding:2px 5px;
+}
+
+pre {
+    background:#222;
+    color:white;
+    padding:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>PTU 1.0</h1>
+<input type="file" id="fileInput" hidden>
+<button onclick="document.getElementById('fileInput').click()">Open</button>
+<button onclick="exportHTML()">Save HTML</button>
+</header>
+
+
+<div id="toolbar">
+
+<button onclick="format('# ')">H1</button>
+<button onclick="format('## ')">H2</button>
+
+<button onclick="wrap('**','**')">B</button>
+<button onclick="wrap('*','*')">I</button>
+<button onclick="wrap('<u>','</u>')">U</button>
+<button onclick="wrap('~~','~~')">S</button>
+
+<button onclick="insertLink()">Link</button>
+<button onclick="insertImage()">Image</button>
+
+<button onclick="format('- ')">List</button>
+<button onclick="format('`','`')">Code</button>
+
+</div>
+
+
+<main>
+
+<textarea id="editor">
+# Welcome to PTU
+
+Write **Markdown** here.
+
+Use the buttons above to help.
+
+</textarea>
+
+
+<div id="preview"></div>
+
+</main>
+
+
+<script>
+
+const editor = document.getElementById("editor");
+const preview = document.getElementById("preview");
+
+
+function escapeHTML(str){
+    return str
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+
+// Tiny Markdown parser
+function markdownToHTML(md){
+
+    let html = escapeHTML(md);
+
+
+    // code blocks
+    html = html.replace(
+        /```([\s\S]*?)```/g,
+        "<pre>$1</pre>"
+    );
+
+
+    // images
+    html = html.replace(
+        /!\[(.*?)\]\((.*?)\)/g,
+        '<img alt="$1" src="$2">'
+    );
+
+
+    // links
+    html = html.replace(
+        /\[(.*?)\]\((.*?)\)/g,
+        '<a href="$2">$1</a>'
+    );
+
+
+    // headings
+    html = html.replace(
+        /^### (.*)$/gm,
+        "<h3>$1</h3>"
+    );
+
+    html = html.replace(
+        /^## (.*)$/gm,
+        "<h2>$1</h2>"
+    );
+
+    html = html.replace(
+        /^# (.*)$/gm,
+        "<h1>$1</h1>"
+    );
+
+
+    // bold
+    html = html.replace(
+        /\*\*(.*?)\*\*/g,
+        "<strong>$1</strong>"
+    );
+
+
+    // italic
+    html = html.replace(
+        /\*(.*?)\*/g,
+        "<em>$1</em>"
+    );
+
+
+    // underline passthrough
+    html = html.replace(
+        /&lt;u&gt;(.*?)&lt;\/u&gt;/g,
+        "<u>$1</u>"
+    );
+
+
+    // strike
+    html = html.replace(
+        /~~(.*?)~~/g,
+        "<del>$1</del>"
+    );
+
+
+    // lists
+    html = html.replace(
+        /^- (.*)$/gm,
+        "<li>$1</li>"
+    );
+
+    html = html.replace(
+        /(<li>.*<\/li>)/gs,
+        "<ul>$1</ul>"
+    );
+
+
+    // paragraphs
+    html = html.replace(
+        /\n\n/g,
+        "</p><p>"
+    );
+
+    html = "<p>" + html + "</p>";
+
+
+    return html;
+}
+
+
+function update(){
+
+    preview.innerHTML =
+        markdownToHTML(editor.value);
+
+}
+
+editor.addEventListener(
+    "input",
+    update
+);
+
+
+function replaceSelection(text){
+
+    let start = editor.selectionStart;
+    let end = editor.selectionEnd;
+
+    let before =
+        editor.value.substring(0,start);
+
+    let after =
+        editor.value.substring(end);
+
+    editor.value =
+        before + text + after;
+
+    editor.focus();
+
+    editor.selectionStart =
+        editor.selectionEnd =
+        start + text.length;
+
+    update();
+}
+
+
+
+function wrap(left,right){
+
+    let start = editor.selectionStart;
+    let end = editor.selectionEnd;
+
+    let selected =
+        editor.value.substring(start,end);
+
+    let result =
+        left + selected + right;
+
+    replaceRange(
+        start,
+        end,
+        result
+    );
+}
+
+
+function format(text){
+
+    replaceSelection(text);
+
+}
+
+
+function replaceRange(start,end,text){
+
+    editor.value =
+        editor.value.substring(0,start)
+        +
+        text
+        +
+        editor.value.substring(end);
+
+    editor.focus();
+
+    editor.selectionStart =
+        start + text.length;
+
+    editor.selectionEnd =
+        start + text.length;
+
+    update();
+}
+
+
+
+function insertLink(){
+
+    let text =
+        prompt("Link text:");
+
+    let url =
+        prompt("URL:");
+
+    if(text && url)
+        replaceSelection(
+            `[${text}](${url})`
+        );
+}
+
+
+
+function insertImage(){
+
+    let alt =
+        prompt("Image description:");
+
+    let url =
+        prompt("Image URL:");
+
+    if(url)
+        replaceSelection(
+            `![${alt||""}](${url})`
+        );
+}
+
+
+
+// Import
+
+document
+.getElementById("fileInput")
+.addEventListener(
+"change",
+function(e){
+
+let file=e.target.files[0];
+
+if(!file)return;
+
+let reader=new FileReader();
+
+reader.onload=function(){
+
+let text=reader.result;
+
+if(file.name.endsWith(".html")){
+
+    editor.value =
+    htmlToMarkdown(text);
+
+}
+else{
+
+    editor.value=text;
+
+}
+
+update();
+
+};
+
+reader.readAsText(file);
+
+});
+
+
+
+// Basic HTML importer
+
+function htmlToMarkdown(html){
+
+let div=document.createElement("div");
+
+div.innerHTML=html;
+
+return div.innerText;
+
+}
+
+
+
+// Export
+
+function exportHTML(){
+
+let content =
+markdownToHTML(editor.value);
+
+
+let output =
+`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PTU Document</title>
+<style>
+body{
+font-family:system-ui;
+max-width:800px;
+margin:40px auto;
+line-height:1.6;
+}
+img{
+max-width:100%;
+}
+</style>
+</head>
+
+<body>
+
+${content}
+
+</body>
+</html>`;
+
+
+let blob =
+new Blob(
+[output],
+{type:"text/html"}
+);
+
+
+let a=document.createElement("a");
+
+a.href =
+URL.createObjectURL(blob);
+
+a.download =
+"document.html";
+
+a.click();
+
+}
+
+
+
+update();
+
+</script>
+
+</body>
+</html>
