@@ -1,4 +1,5 @@
 # PTU
+***Write Markdown. Export HTML. Nothing more.***
 
 PTU (pronounced "Pee Tee You," sounding like "Pity You") stands for **Plain Text Utopia**—a plain-text HTML editor powered by Markdown.
 
