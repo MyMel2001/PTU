@@ -1,4 +1,7 @@
 # PTU
-PTU (pronounced like Pee Tee You - sounds like "Pity You" As in "I pity you" - similar to how "NVU" was "envy you" but the pure opposite) - Plain Text Utopia. A plaintext HTML editor powered by Markdown.
 
-A spiritual successor to projects such as NVU, Kompozer, and BlueGriffon.
+PTU (pronounced "Pee Tee You," sounding like "Pity You") stands for **Plain Text Utopia**—a plain-text HTML editor powered by Markdown.
+
+Named as the opposite of **NVU** ("envy you"), PTU embraces a simple philosophy: Markdown is the source, HTML is the output.
+
+A spiritual successor to projects such as NVU, KompoZer, and BlueGriffon.
