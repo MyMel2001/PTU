@@ -2,261 +2,655 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PTU</title>
 
 <style>
-:root {
-    --bg: #1e1e1e;
-    --panel: #252526;
-    --text: #ddd;
-    --accent: #4da3ff;
+
+:root{
+    --bg:#1e1e1e;
+    --panel:#252526;
+    --toolbar:#181818;
+    --text:#ddd;
+    --accent:#4da3ff;
 }
 
-* {
-    box-sizing: border-box;
+*{
+    box-sizing:border-box;
 }
 
-body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    font-family: system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-}
-
-header {
-    padding: 10px;
-    background: #111;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-h1 {
-    font-size: 18px;
-    margin-right: auto;
-}
-
-button {
-    background: var(--panel);
-    border: 1px solid #555;
-    color: white;
-    padding: 6px 10px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: var(--accent);
-}
-
-#toolbar {
-    padding: 8px;
-    background: #181818;
-    display:flex;
-    gap:5px;
-    flex-wrap:wrap;
-}
-
-main {
-    flex:1;
-    display:flex;
-    min-height:0;
-}
-
-textarea,
-#preview {
-    width:50%;
+html,body{
+    margin:0;
     height:100%;
-    padding:20px;
-    overflow:auto;
+    font-family:system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--text);
 }
 
-textarea {
+body{
+    display:flex;
+    flex-direction:column;
+}
+
+header{
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+
     background:#111;
-    color:#eee;
-    border:none;
-    resize:none;
-    font-family:monospace;
-    font-size:16px;
-    outline:none;
-}
 
-#preview {
-    background:white;
-    color:black;
-}
-
-code {
-    background:#eee;
-    padding:2px 5px;
-}
-
-pre {
-    background:#222;
-    color:white;
     padding:10px;
 }
+
+header h1{
+    margin:0;
+    font-size:18px;
+    margin-right:auto;
+}
+
+button{
+
+    background:var(--panel);
+    color:white;
+
+    border:1px solid #555;
+
+    padding:6px 10px;
+
+    cursor:pointer;
+
+}
+
+button:hover{
+
+    background:var(--accent);
+
+}
+
+#toolbar{
+
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+
+    padding:8px;
+
+    background:var(--toolbar);
+
+}
+
+main{
+
+    flex:1;
+
+    display:flex;
+
+    min-height:0;
+
+}
+
+textarea{
+
+    width:50%;
+    border:none;
+    outline:none;
+
+    resize:none;
+
+    background:#111;
+    color:#eee;
+
+    padding:20px;
+
+    font:16px monospace;
+
+}
+
+#preview{
+
+    width:50%;
+
+    overflow:auto;
+
+    background:white;
+    color:black;
+
+    padding:24px;
+
+}
+
+/* ---------- Preview Styling ---------- */
+
+#preview h1,
+#preview h2,
+#preview h3{
+
+    margin-top:1.2em;
+
+}
+
+#preview p{
+
+    line-height:1.6;
+
+}
+
+#preview img{
+
+    max-width:100%;
+    height:auto;
+
+}
+
+#preview pre{
+
+    background:#222;
+
+    color:white;
+
+    padding:1em;
+
+    overflow:auto;
+
+    border-radius:4px;
+
+}
+
+#preview code{
+
+    background:#eee;
+
+    padding:2px 5px;
+
+    border-radius:3px;
+
+}
+
+#preview pre code{
+
+    background:none;
+
+    padding:0;
+
+}
+
+#preview ul{
+
+    padding-left:30px;
+
+}
+
+#preview blockquote{
+
+    border-left:4px solid #bbb;
+
+    margin-left:0;
+
+    padding-left:12px;
+
+    color:#555;
+
+}
+
+#preview hr{
+
+    border:none;
+    border-top:1px solid #ccc;
+
+    margin:2em 0;
+
+}
+
 </style>
+
 </head>
 
 <body>
 
 <header>
-<h1>PTU</h1>
-<input type="file" id="fileInput" hidden>
-<button onclick="document.getElementById('fileInput').click()">Open</button>
-<button onclick="exportHTML()">Save HTML</button>
-</header>
 
+<h1>PTU</h1>
+
+<input
+type="file"
+id="fileInput"
+hidden>
+
+<button onclick="fileInput.click()">
+Open
+</button>
+
+<button onclick="exportHTML()">
+Save HTML
+</button>
+
+</header>
 
 <div id="toolbar">
 
-<button onclick="format('# ')">H1</button>
-<button onclick="format('## ')">H2</button>
+<button onclick="prefixLine('# ')">
+H1
+</button>
 
-<button onclick="wrap('**','**')">B</button>
-<button onclick="wrap('*','*')">I</button>
-<button onclick="wrap('<u>','</u>')">U</button>
-<button onclick="wrap('~~','~~')">S</button>
+<button onclick="prefixLine('## ')">
+H2
+</button>
 
-<button onclick="insertLink()">Link</button>
-<button onclick="insertImage()">Image</button>
+<button onclick="prefixLine('### ')">
+H3
+</button>
 
-<button onclick="format('- ')">List</button>
-<button onclick="format('`','`')">Code</button>
+<button onclick="wrapSelection('**','**')">
+Bold
+</button>
+
+<button onclick="wrapSelection('*','*')">
+Italic
+</button>
+
+<button onclick="wrapSelection('<u>','</u>')">
+Underline
+</button>
+
+<button onclick="wrapSelection('~~','~~')">
+Strike
+</button>
+
+<button onclick="insertInlineCode()">
+Code
+</button>
+
+<button onclick="insertCodeBlock()">
+Code Block
+</button>
+
+<button onclick="prefixLine('- ')">
+List
+</button>
+
+<button onclick="insertLink()">
+Link
+</button>
+
+<button onclick="insertImage()">
+Image
+</button>
 
 </div>
-
 
 <main>
 
 <textarea id="editor">
+
 # Welcome to PTU
 
-Write **Markdown** here.
+This editor now has a better Markdown parser.
 
-Use the buttons above for some help coding your document.
+Try **bold**, *italic*, `inline code`, lists,
+images, links and fenced code blocks.
 
-</textarea>
-
-
-<div id="preview"></div>
-
+```js
+console.log("Hello!");
+```
+</textarea> <div id="preview"></div>
 </main>
-
-
 <script>
+const editor=document.getElementById("editor");
+const preview=document.getElementById("preview"); 
+const fileInput=document.getElementById("fileInput");
 
-const editor = document.getElementById("editor");
-const preview = document.getElementById("preview");
+/*----------------------------------------------------------
+    HTML Escaping
+----------------------------------------------------------*/
 
+function escapeHTML(text){
 
-function escapeHTML(str){
-    return str
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
+    return text
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+
 }
 
 
-// Tiny Markdown parser
-function markdownToHTML(md){
+/*----------------------------------------------------------
+    Inline Markdown
+----------------------------------------------------------*/
 
-    let html = escapeHTML(md);
+function parseInline(text){
 
+    text = escapeHTML(text);
 
-    // code blocks
-    html = html.replace(
-        /```([\s\S]*?)```/g,
-        "<pre>$1</pre>"
-    );
+    /*
+        Underline is stored literally in the Markdown.
+        We restore it after escaping.
+    */
 
-
-    // images
-    html = html.replace(
-        /!\[(.*?)\]\((.*?)\)/g,
-        '<img alt="$1" src="$2">'
-    );
-
-
-    // links
-    html = html.replace(
-        /\[(.*?)\]\((.*?)\)/g,
-        '<a href="$2">$1</a>'
-    );
-
-
-    // headings
-    html = html.replace(
-        /^### (.*)$/gm,
-        "<h3>$1</h3>"
-    );
-
-    html = html.replace(
-        /^## (.*)$/gm,
-        "<h2>$1</h2>"
-    );
-
-    html = html.replace(
-        /^# (.*)$/gm,
-        "<h1>$1</h1>"
-    );
-
-
-    // bold
-    html = html.replace(
-        /\*\*(.*?)\*\*/g,
-        "<strong>$1</strong>"
-    );
-
-
-    // italic
-    html = html.replace(
-        /\*(.*?)\*/g,
-        "<em>$1</em>"
-    );
-
-
-    // underline passthrough
-    html = html.replace(
-        /&lt;u&gt;(.*?)&lt;\/u&gt;/g,
+    text = text.replace(
+        /&lt;u&gt;(.*?)&lt;\/u&gt;/gs,
         "<u>$1</u>"
     );
 
+    // Images
 
-    // strike
-    html = html.replace(
-        /~~(.*?)~~/g,
+    text = text.replace(
+        /!\[(.*?)\]\((.*?)\)/g,
+        '<img src="$2" alt="$1" loading="lazy">'
+    );
+
+    // Links
+
+    text = text.replace(
+        /\[(.*?)\]\((.*?)\)/g,
+        '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
+
+    // Inline code
+
+    text = text.replace(
+        /`([^`\n]+?)`/g,
+        "<code>$1</code>"
+    );
+
+    // Bold
+
+    text = text.replace(
+        /\*\*(.+?)\*\*/gs,
+        "<strong>$1</strong>"
+    );
+
+    // Italic
+    // Won't steal the ** markers.
+
+    text = text.replace(
+        /(?<!\*)\*([^*\n]+?)\*(?!\*)/g,
+        "<em>$1</em>"
+    );
+
+    // Strike
+
+    text = text.replace(
+        /~~(.+?)~~/gs,
         "<del>$1</del>"
     );
 
+    return text;
 
-    // lists
-    html = html.replace(
-        /^- (.*)$/gm,
-        "<li>$1</li>"
-    );
-
-    html = html.replace(
-        /(<li>.*<\/li>)/gs,
-        "<ul>$1</ul>"
-    );
-
-
-    // paragraphs
-    html = html.replace(
-        /\n\n/g,
-        "</p><p>"
-    );
-
-    html = "<p>" + html + "</p>";
-
-
-    return html;
 }
 
+
+/*----------------------------------------------------------
+    Block Markdown Parser
+----------------------------------------------------------*/
+
+function markdownToHTML(markdown){
+
+    markdown =
+        markdown.replace(/\r/g,"");
+
+    const lines =
+        markdown.split("\n");
+
+    let html=[];
+
+    let inCode=false;
+    let code=[];
+
+    let inList=false;
+
+    let paragraph=[];
+
+    function flushParagraph(){
+
+        if(paragraph.length===0)
+            return;
+
+        html.push(
+            "<p>"
+            +
+            parseInline(
+                paragraph.join(" ")
+            )
+            +
+            "</p>"
+        );
+
+        paragraph=[];
+
+    }
+
+    function closeList(){
+
+        if(!inList)
+            return;
+
+        html.push("</ul>");
+
+        inList=false;
+
+    }
+
+    for(let line of lines){
+
+        /*--------------------------
+            CODE BLOCKS
+        --------------------------*/
+
+        if(line.startsWith("```")){
+
+            flushParagraph();
+            closeList();
+
+            if(inCode){
+
+                html.push(
+                    "<pre><code>"
+                    +
+                    escapeHTML(
+                        code.join("\n")
+                    )
+                    +
+                    "</code></pre>"
+                );
+
+                code=[];
+
+                inCode=false;
+
+            }
+            else{
+
+                inCode=true;
+
+            }
+
+            continue;
+
+        }
+
+        if(inCode){
+
+            code.push(line);
+
+            continue;
+
+        }
+
+        /*--------------------------
+            Blank line
+        --------------------------*/
+
+        if(line.trim()===""){
+
+            flushParagraph();
+            closeList();
+
+            continue;
+
+        }
+
+        /*--------------------------
+            Horizontal rule
+        --------------------------*/
+
+        if(/^---+$/.test(line.trim())){
+
+            flushParagraph();
+            closeList();
+
+            html.push("<hr>");
+
+            continue;
+
+        }
+
+        /*--------------------------
+            Headings
+        --------------------------*/
+
+        let match;
+
+        if(match=line.match(/^### (.+)$/)){
+
+            flushParagraph();
+            closeList();
+
+            html.push(
+                "<h3>"
+                +
+                parseInline(match[1])
+                +
+                "</h3>"
+            );
+
+            continue;
+
+        }
+
+        if(match=line.match(/^## (.+)$/)){
+
+            flushParagraph();
+            closeList();
+
+            html.push(
+                "<h2>"
+                +
+                parseInline(match[1])
+                +
+                "</h2>"
+            );
+
+            continue;
+
+        }
+
+        if(match=line.match(/^# (.+)$/)){
+
+            flushParagraph();
+            closeList();
+
+            html.push(
+                "<h1>"
+                +
+                parseInline(match[1])
+                +
+                "</h1>"
+            );
+
+            continue;
+
+        }
+
+        /*--------------------------
+            Blockquotes
+        --------------------------*/
+
+        if(match=line.match(/^> (.+)$/)){
+
+            flushParagraph();
+            closeList();
+
+            html.push(
+                "<blockquote>"
+                +
+                parseInline(match[1])
+                +
+                "</blockquote>"
+            );
+
+            continue;
+
+        }
+
+        /*--------------------------
+            Lists
+        --------------------------*/
+
+        if(match=line.match(/^- (.+)$/)){
+
+            flushParagraph();
+
+            if(!inList){
+
+                html.push("<ul>");
+
+                inList=true;
+
+            }
+
+            html.push(
+                "<li>"
+                +
+                parseInline(match[1])
+                +
+                "</li>"
+            );
+
+            continue;
+
+        }
+
+        closeList();
+
+        /*
+            Everything else becomes
+            part of a paragraph.
+        */
+
+        paragraph.push(line.trim());
+
+    }
+
+    flushParagraph();
+    closeList();
+
+    /*
+        Unclosed code block?
+        Still render it.
+    */
+
+    if(inCode){
+
+        html.push(
+            "<pre><code>"
+            +
+            escapeHTML(
+                code.join("\n")
+            )
+            +
+            "</code></pre>"
+        );
+
+    }
+
+    return html.join("\n");
+
+}
+
+/*----------------------------------------------------------
+    Preview
+----------------------------------------------------------*/
 
 function update(){
 
@@ -271,60 +665,31 @@ editor.addEventListener(
 );
 
 
-function replaceSelection(text){
+/*----------------------------------------------------------
+    Selection Helpers
+----------------------------------------------------------*/
 
-    let start = editor.selectionStart;
-    let end = editor.selectionEnd;
+function getSelection(){
 
-    let before =
-        editor.value.substring(0,start);
+    return{
 
-    let after =
-        editor.value.substring(end);
+        start:editor.selectionStart,
 
-    editor.value =
-        before + text + after;
+        end:editor.selectionEnd,
 
-    editor.focus();
+        text:editor.value.substring(
+            editor.selectionStart,
+            editor.selectionEnd
+        )
 
-    editor.selectionStart =
-        editor.selectionEnd =
-        start + text.length;
-
-    update();
-}
-
-
-
-function wrap(left,right){
-
-    let start = editor.selectionStart;
-    let end = editor.selectionEnd;
-
-    let selected =
-        editor.value.substring(start,end);
-
-    let result =
-        left + selected + right;
-
-    replaceRange(
-        start,
-        end,
-        result
-    );
-}
-
-
-function format(text){
-
-    replaceSelection(text);
+    };
 
 }
 
 
 function replaceRange(start,end,text){
 
-    editor.value =
+    editor.value=
         editor.value.substring(0,start)
         +
         text
@@ -333,253 +698,566 @@ function replaceRange(start,end,text){
 
     editor.focus();
 
-    editor.selectionStart =
-        start + text.length;
-
-    editor.selectionEnd =
-        start + text.length;
-
     update();
+
 }
 
 
+function setCursor(pos){
+
+    editor.selectionStart=
+        editor.selectionEnd=
+        pos;
+
+}
+
+
+function selectRange(start,end){
+
+    editor.selectionStart=start;
+    editor.selectionEnd=end;
+
+}
+
+
+/*----------------------------------------------------------
+    Wrap Selection
+----------------------------------------------------------*/
+
+function wrapSelection(left,right){
+
+    const sel=getSelection();
+
+    const replacement=
+        left+
+        sel.text+
+        right;
+
+    replaceRange(
+        sel.start,
+        sel.end,
+        replacement
+    );
+
+    if(sel.text.length===0){
+
+        setCursor(
+            sel.start+
+            left.length
+        );
+
+    }
+    else{
+
+        selectRange(
+            sel.start,
+            sel.start+
+            replacement.length
+        );
+
+    }
+
+}
+
+
+/*----------------------------------------------------------
+    Prefix Whole Lines
+----------------------------------------------------------*/
+
+function prefixLine(prefix){
+
+    let start=
+        editor.selectionStart;
+
+    let end=
+        editor.selectionEnd;
+
+    let value=
+        editor.value;
+
+    let lineStart=
+        value.lastIndexOf(
+            "\n",
+            start-1
+        )+1;
+
+    let lineEnd=
+        value.indexOf(
+            "\n",
+            end
+        );
+
+    if(lineEnd===-1)
+        lineEnd=value.length;
+
+    let block=
+        value.substring(
+            lineStart,
+            lineEnd
+        );
+
+    let lines=
+        block.split("\n");
+
+    lines=
+        lines.map(
+            line=>prefix+line
+        );
+
+    let replacement=
+        lines.join("\n");
+
+    replaceRange(
+        lineStart,
+        lineEnd,
+        replacement
+    );
+
+    selectRange(
+        lineStart,
+        lineStart+
+        replacement.length
+    );
+
+}
+
+
+/*----------------------------------------------------------
+    Inline Code
+----------------------------------------------------------*/
+
+function insertInlineCode(){
+
+    wrapSelection(
+        "`",
+        "`"
+    );
+
+}
+
+
+/*----------------------------------------------------------
+    Code Block
+----------------------------------------------------------*/
+
+function insertCodeBlock(){
+
+    const sel=getSelection();
+
+    let text=sel.text;
+
+    if(text===""){
+
+        text="\n";
+
+    }
+
+    const replacement=
+`\
+\`\`\`
+${text}
+\`\`\`
+`;
+
+    replaceRange(
+        sel.start,
+        sel.end,
+        replacement
+    );
+
+    if(sel.text===""){
+
+        setCursor(
+            sel.start+4
+        );
+
+    }
+
+}
+
+
+/*----------------------------------------------------------
+    Links
+----------------------------------------------------------*/
 
 function insertLink(){
 
-    let text =
+    let sel=getSelection();
+
+    let text=
+        sel.text ||
         prompt("Link text:");
 
-    let url =
+    if(text===null)
+        return;
+
+    let url=
         prompt("URL:");
 
-    if(text && url)
-        replaceSelection(
-            `[${text}](${url})`
-        );
+    if(!url)
+        return;
+
+    replaceRange(
+        sel.start,
+        sel.end,
+        `[${text}](${url})`
+    );
+
 }
 
 
+/*----------------------------------------------------------
+    Images
+----------------------------------------------------------*/
 
 function insertImage(){
 
-    let alt =
-        prompt("Image description:");
+    let alt=
+        prompt(
+            "Image description:"
+        ) || "";
 
-    let url =
-        prompt("Image URL:");
-
-    if(url)
-        replaceSelection(
-            `![${alt||""}](${url})`
+    let url=
+        prompt(
+            "Image URL:"
         );
-}
 
+    if(!url)
+        return;
 
+    const md=
+        `![${alt}](${url})`;
 
-// Import
-
-document
-.getElementById("fileInput")
-.addEventListener(
-"change",
-function(e){
-
-let file=e.target.files[0];
-
-if(!file)return;
-
-let reader=new FileReader();
-
-reader.onload=function(){
-
-let text=reader.result;
-
-if(file.name.endsWith(".html")){
-
-    editor.value =
-    htmlToMarkdown(text);
-
-}
-else{
-
-    editor.value=text;
+    replaceRange(
+        editor.selectionStart,
+        editor.selectionEnd,
+        md
+    );
 
 }
 
-update();
 
-};
+/*----------------------------------------------------------
+    Tab inserts spaces
+----------------------------------------------------------*/
 
-reader.readAsText(file);
+editor.addEventListener(
+    "keydown",
+    function(e){
 
-});
+        if(e.key!=="Tab")
+            return;
 
+        e.preventDefault();
 
+        const pos=
+            editor.selectionStart;
 
-// Basic HTML importer
+        replaceRange(
+            pos,
+            pos,
+            "    "
+        );
+
+        setCursor(pos+4);
+
+    }
+);
+
+/*----------------------------------------------------------
+    HTML -> Markdown
+----------------------------------------------------------*/
+
 function htmlToMarkdown(html){
 
-    let parser = new DOMParser();
+    const parser = new DOMParser();
 
-    let doc = parser.parseFromString(
+    const doc = parser.parseFromString(
         html,
         "text/html"
     );
 
-    // Only import the actual page content
-    let root = doc.body;
-
-
     function convert(node){
 
-        if(node.nodeType === Node.TEXT_NODE){
+        if(node.nodeType===Node.TEXT_NODE){
+
             return node.textContent;
+
         }
 
-        if(node.nodeType !== Node.ELEMENT_NODE){
+        if(node.nodeType!==Node.ELEMENT_NODE){
+
             return "";
+
         }
 
+        const tag =
+            node.tagName.toLowerCase();
 
-        let content =
+        const children =
             Array.from(node.childNodes)
             .map(convert)
             .join("");
 
-
-        switch(node.tagName.toLowerCase()){
+        switch(tag){
 
             case "h1":
-                return "\n# " + content.trim() + "\n";
+                return "\n# "+children.trim()+"\n\n";
 
             case "h2":
-                return "\n## " + content.trim() + "\n";
+                return "\n## "+children.trim()+"\n\n";
 
             case "h3":
-                return "\n### " + content.trim() + "\n";
+                return "\n### "+children.trim()+"\n\n";
 
-            case "strong":
-            case "b":
-                return "**" + content + "**";
-
-            case "em":
-            case "i":
-                return "*" + content + "*";
-
-            case "u":
-                return "<u>" + content + "</u>";
-
-            case "del":
-            case "s":
-                return "~~" + content + "~~";
-
-            case "a":
-                return "[" +
-                    content +
-                    "](" +
-                    node.href +
-                    ")";
-
-            case "img":
-                return "![" +
-                    (node.alt || "") +
-                    "](" +
-                    node.src +
-                    ")";
-
-            case "code":
-                return "`" + content + "`";
-
-            case "pre":
-                return "\n```\n" +
-                    content +
-                    "\n```\n";
-
-            case "li":
-                return "\n- " + content;
+            case "p":
+                return children.trim()+"\n\n";
 
             case "br":
                 return "\n";
 
-            case "p":
-                return "\n" + content + "\n";
+            case "strong":
+            case "b":
+                return "**"+children+"**";
+
+            case "em":
+            case "i":
+                return "*"+children+"*";
+
+            case "u":
+                return "<u>"+children+"</u>";
+
+            case "del":
+            case "s":
+                return "~~"+children+"~~";
+
+            case "code":
+
+                if(node.parentElement &&
+                   node.parentElement.tagName.toLowerCase()==="pre")
+                    return node.textContent;
+
+                return "`"+node.textContent+"`";
+
+            case "pre":
+
+                return "\n```\n"
+                    +node.textContent.replace(/\n$/,"")
+                    +"\n```\n\n";
+
+            case "blockquote":
+
+                return children
+                    .split("\n")
+                    .map(line=>line ? "> "+line : "")
+                    .join("\n")
+                    +"\n\n";
+
+            case "hr":
+
+                return "\n---\n\n";
+
+            case "a":
+
+                return `[${children}](${node.getAttribute("href")||""})`;
+
+            case "img":
+
+                return `![${node.alt||""}](${node.getAttribute("src")||""})`;
 
             case "ul":
-            case "ol":
-                return content + "\n";
+
+                return Array.from(node.children)
+                    .map(convert)
+                    .join("")
+                    +"\n";
+
+            case "li":
+
+                return "- "+children.trim()+"\n";
 
             default:
-                return content;
+
+                return children;
+
         }
+
     }
 
-
-    return convert(root)
+    return convert(doc.body)
         .replace(/\n{3,}/g,"\n\n")
         .trim();
 
 }
 
 
+/*----------------------------------------------------------
+    File Import
+----------------------------------------------------------*/
 
-// Export
+fileInput.addEventListener(
+    "change",
+    function(e){
+
+        const file=e.target.files[0];
+
+        if(!file)
+            return;
+
+        const reader=new FileReader();
+
+        reader.onload=function(){
+
+            const text=reader.result;
+
+            if(file.name.toLowerCase().endsWith(".html")){
+
+                editor.value=
+                    htmlToMarkdown(text);
+
+            }
+            else{
+
+                editor.value=text;
+
+            }
+
+            update();
+
+        };
+
+        reader.readAsText(file);
+
+    }
+);
+
+
+/*----------------------------------------------------------
+    Export HTML
+----------------------------------------------------------*/
 
 function exportHTML(){
 
-let content =
-markdownToHTML(editor.value);
-
-
-let output =
+    const html=
 `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+
 <meta charset="UTF-8">
+
 <title>PTU Document</title>
+
 <style>
+
 body{
-font-family:system-ui;
-max-width:800px;
-margin:40px auto;
-line-height:1.6;
+
+    font-family:system-ui,sans-serif;
+
+    line-height:1.6;
+
+    max-width:900px;
+
+    margin:40px auto;
+
+    padding:20px;
+
 }
+
 img{
-max-width:100%;
+
+    max-width:100%;
+    height:auto;
+
 }
+
+pre{
+
+    background:#222;
+
+    color:white;
+
+    padding:1em;
+
+    overflow:auto;
+
+}
+
+code{
+
+    background:#eee;
+
+    padding:2px 4px;
+
+}
+
+pre code{
+
+    background:none;
+
+    padding:0;
+
+}
+
+blockquote{
+
+    border-left:4px solid #bbb;
+
+    padding-left:12px;
+
+    color:#555;
+
+}
+
 </style>
+
 </head>
 
 <body>
 
-${content}
+${markdownToHTML(editor.value)}
 
 </body>
+
 </html>`;
 
+    const blob=
+        new Blob(
+            [html],
+            {
+                type:"text/html"
+            }
+        );
 
-let blob =
-new Blob(
-[output],
-{type:"text/html"}
-);
+    const url=
+        URL.createObjectURL(blob);
 
+    const a=
+        document.createElement("a");
 
-let a=document.createElement("a");
+    a.href=url;
 
-a.href =
-URL.createObjectURL(blob);
+    a.download="document.html";
 
-a.download =
-"document.html";
+    document.body.appendChild(a);
 
-a.click();
+    a.click();
+
+    a.remove();
+
+    setTimeout(function(){
+
+        URL.revokeObjectURL(url);
+
+    },100);
 
 }
 
 
+/*----------------------------------------------------------
+    Initial Render
+----------------------------------------------------------*/
 
 update();
-
 </script>
 
 </body>
