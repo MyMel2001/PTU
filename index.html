@@ -1120,6 +1120,52 @@ function htmlToMarkdown(html){
         "text/html"
     );
 
+    function directivesForStyle(style){
+
+        const directives=[];
+        const backgroundImage=
+            style.getPropertyValue("background-image").trim();
+        const imageMatch=backgroundImage.match(
+            /^url\(\s*(?:"([^"]*)"|'([^']*)'|(.+?))\s*\)$/i
+        );
+
+        if(imageMatch){
+
+            const url=(
+                imageMatch[1]
+                ||imageMatch[2]
+                ||imageMatch[3]
+            ).trim();
+
+            if(url && !/[\[\]]/.test(url))
+                directives.push("<bg-img ["+url+"]>");
+            else if(url && !/[;{}<>]/.test(url))
+                directives.push("<bg-img "+url+">");
+
+        }
+
+        const backgroundColor=
+            style.getPropertyValue("background-color").trim();
+
+        if(backgroundColor)
+            directives.push("<bg-color "+backgroundColor+">");
+
+        const textColor=
+            style.getPropertyValue("color").trim();
+
+        if(textColor)
+            directives.push("<text-color "+textColor+">");
+
+        const align=
+            style.getPropertyValue("text-align").trim().toLowerCase();
+
+        if(/^(left|center|right)$/.test(align))
+            directives.push("<align "+align+">");
+
+        return directives.join("");
+
+    }
+
     function convert(node){
 
         if(node.nodeType===Node.TEXT_NODE){
@@ -1142,19 +1188,21 @@ function htmlToMarkdown(html){
             .map(convert)
             .join("");
 
+        const directives=directivesForStyle(node.style);
+
         switch(tag){
 
             case "h1":
-                return "\n# "+children.trim()+"\n\n";
+                return "\n"+directives+"# "+children.trim()+"\n\n";
 
             case "h2":
-                return "\n## "+children.trim()+"\n\n";
+                return "\n"+directives+"## "+children.trim()+"\n\n";
 
             case "h3":
-                return "\n### "+children.trim()+"\n\n";
+                return "\n"+directives+"### "+children.trim()+"\n\n";
 
             case "p":
-                return children.trim()+"\n\n";
+                return directives+children.trim()+"\n\n";
 
             case "br":
                 return "\n";
@@ -1184,13 +1232,13 @@ function htmlToMarkdown(html){
 
             case "pre":
 
-                return "\n```\n"
+                return "\n"+directives+"```\n"
                     +node.textContent.replace(/\n$/,"")
                     +"\n```\n\n";
 
             case "blockquote":
 
-                return children
+                return directives+children
                     .split("\n")
                     .map(line=>line ? "> "+line : "")
                     .join("\n")
@@ -1198,7 +1246,7 @@ function htmlToMarkdown(html){
 
             case "hr":
 
-                return "\n---\n\n";
+                return "\n"+directives+"---\n\n";
 
             case "a":
 
@@ -1217,7 +1265,7 @@ function htmlToMarkdown(html){
 
             case "li":
 
-                return "- "+children.trim()+"\n";
+                return directives+"- "+children.trim()+"\n";
 
             default:
 
@@ -1227,7 +1275,13 @@ function htmlToMarkdown(html){
 
     }
 
-    return convert(doc.body)
+    const documentDirectives=directivesForStyle(doc.body.style);
+    const markdown=Array.from(doc.body.childNodes)
+        .map(convert)
+        .join("");
+
+    return (documentDirectives ? documentDirectives+"\n\n" : "")
+        +markdown
         .replace(/\n{3,}/g,"\n\n")
         .trim();
 
@@ -1281,7 +1335,7 @@ fileInput.addEventListener(
 
 function exportHTML(){
 
-    const document=markdownToDocument(editor.value);
+    const exportedDocument=markdownToDocument(editor.value);
 
     const html=
 `<!DOCTYPE html>
@@ -1357,9 +1411,9 @@ blockquote{
 
 </head>
 
-<body${document.documentStyle}>
+<body${exportedDocument.documentStyle}>
 
-${document.html}
+${exportedDocument.html}
 
 </body>
 
