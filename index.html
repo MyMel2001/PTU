@@ -384,7 +384,86 @@ function parseInline(text){
     Block Markdown Parser
 ----------------------------------------------------------*/
 
-function markdownToHTML(markdown){
+function escapeAttribute(value){
+
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/"/g,"&quot;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+
+}
+
+function styleText(style){
+
+    const rules=[];
+
+    if(style.backgroundImage){
+
+        const url=style.backgroundImage
+            .replace(/\\/g,"\\\\")
+            .replace(/"/g,'\\"');
+
+        rules.push(`background-image:url("${url}")`);
+
+    }
+
+    if(style.backgroundColor)
+        rules.push(`background-color:${style.backgroundColor}`);
+
+    if(style.textColor)
+        rules.push(`color:${style.textColor}`);
+
+    if(style.align)
+        rules.push(`text-align:${style.align}`);
+
+    return rules.join(";");
+
+}
+
+function styleAttribute(style){
+
+    const text=styleText(style);
+
+    return text
+        ? ` style="${escapeAttribute(text)}"`
+        : "";
+
+}
+
+function readStyleDirectives(line){
+
+    const style={};
+    let rest=line;
+    let match;
+    let found=false;
+
+    while(match=rest.match(/^\s*<(bg-img|bg-color|text-color|align)\s+(?:\[([^\]]+)\]|([^>]+))>\s*/i)){
+
+        const name=match[1].toLowerCase();
+        const value=(match[2]||match[3]).trim();
+
+        /* Do not permit a directive value to add another CSS declaration. */
+        if(value && !/[;{}<>]/.test(value)){
+
+            if(name==="bg-img") style.backgroundImage=value;
+            if(name==="bg-color") style.backgroundColor=value;
+            if(name==="text-color") style.textColor=value;
+            if(name==="align" && /^(left|center|right)$/i.test(value))
+                style.align=value.toLowerCase();
+
+        }
+
+        rest=rest.slice(match[0].length);
+        found=true;
+
+    }
+
+    return {style,rest,found};
+
+}
+
+function markdownToDocument(markdown){
 
     markdown =
         markdown.replace(/\r/g,"");
@@ -393,6 +472,29 @@ function markdownToHTML(markdown){
         markdown.split("\n");
 
     let html=[];
+    let documentStyle={};
+
+    let contentStart=0;
+
+    /* Directive-only lines at the beginning style the whole document. */
+    while(contentStart<lines.length){
+
+        if(lines[contentStart].trim()===""){
+
+            contentStart++;
+            continue;
+
+        }
+
+        const directive=readStyleDirectives(lines[contentStart]);
+
+        if(!directive.found || directive.rest.trim()!=="")
+            break;
+
+        Object.assign(documentStyle,directive.style);
+        contentStart++;
+
+    }
 
     let inCode=false;
     let code=[];
@@ -400,6 +502,8 @@ function markdownToHTML(markdown){
     let inList=false;
 
     let paragraph=[];
+    let paragraphStyle={};
+    let codeStyle={};
 
     function flushParagraph(){
 
@@ -407,7 +511,9 @@ function markdownToHTML(markdown){
             return;
 
         html.push(
-            "<p>"
+            "<p"
+            + styleAttribute(paragraphStyle)
+            + ">"
             +
             parseInline(
                 paragraph.join(" ")
@@ -417,6 +523,7 @@ function markdownToHTML(markdown){
         );
 
         paragraph=[];
+        paragraphStyle={};
 
     }
 
@@ -431,7 +538,22 @@ function markdownToHTML(markdown){
 
     }
 
-    for(let line of lines){
+    for(let line of lines.slice(contentStart)){
+
+        const directive=inCode
+            ? {style:{},rest:line,found:false}
+            : readStyleDirectives(line);
+        let blockStyle={};
+
+        if(directive.found){
+
+            if(paragraph.length)
+                flushParagraph();
+
+            line=directive.rest;
+            blockStyle=directive.style;
+
+        }
 
         /*--------------------------
             CODE BLOCKS
@@ -445,7 +567,9 @@ function markdownToHTML(markdown){
             if(inCode){
 
                 html.push(
-                    "<pre><code>"
+                    "<pre"
+                    + styleAttribute(codeStyle)
+                    + "><code>"
                     +
                     escapeHTML(
                         code.join("\n")
@@ -455,6 +579,7 @@ function markdownToHTML(markdown){
                 );
 
                 code=[];
+                codeStyle={};
 
                 inCode=false;
 
@@ -462,6 +587,7 @@ function markdownToHTML(markdown){
             else{
 
                 inCode=true;
+                codeStyle=blockStyle;
 
             }
 
@@ -499,7 +625,7 @@ function markdownToHTML(markdown){
             flushParagraph();
             closeList();
 
-            html.push("<hr>");
+            html.push("<hr"+styleAttribute(blockStyle)+">");
 
             continue;
 
@@ -517,7 +643,7 @@ function markdownToHTML(markdown){
             closeList();
 
             html.push(
-                "<h3>"
+                "<h3"+styleAttribute(blockStyle)+">"
                 +
                 parseInline(match[1])
                 +
@@ -534,7 +660,7 @@ function markdownToHTML(markdown){
             closeList();
 
             html.push(
-                "<h2>"
+                "<h2"+styleAttribute(blockStyle)+">"
                 +
                 parseInline(match[1])
                 +
@@ -551,7 +677,7 @@ function markdownToHTML(markdown){
             closeList();
 
             html.push(
-                "<h1>"
+                "<h1"+styleAttribute(blockStyle)+">"
                 +
                 parseInline(match[1])
                 +
@@ -572,7 +698,7 @@ function markdownToHTML(markdown){
             closeList();
 
             html.push(
-                "<blockquote>"
+                "<blockquote"+styleAttribute(blockStyle)+">"
                 +
                 parseInline(match[1])
                 +
@@ -600,7 +726,7 @@ function markdownToHTML(markdown){
             }
 
             html.push(
-                "<li>"
+                "<li"+styleAttribute(blockStyle)+">"
                 +
                 parseInline(match[1])
                 +
@@ -618,6 +744,9 @@ function markdownToHTML(markdown){
             part of a paragraph.
         */
 
+        if(paragraph.length===0)
+            paragraphStyle=blockStyle;
+
         paragraph.push(line.trim());
 
     }
@@ -633,7 +762,9 @@ function markdownToHTML(markdown){
     if(inCode){
 
         html.push(
-            "<pre><code>"
+            "<pre"
+            + styleAttribute(codeStyle)
+            + "><code>"
             +
             escapeHTML(
                 code.join("\n")
@@ -644,7 +775,17 @@ function markdownToHTML(markdown){
 
     }
 
-    return html.join("\n");
+    return {
+        html:html.join("\n"),
+        documentStyle:styleAttribute(documentStyle),
+        documentStyleText:styleText(documentStyle)
+    };
+
+}
+
+function markdownToHTML(markdown){
+
+    return markdownToDocument(markdown).html;
 
 }
 
@@ -654,8 +795,10 @@ function markdownToHTML(markdown){
 
 function update(){
 
-    preview.innerHTML =
-        markdownToHTML(editor.value);
+    const document=markdownToDocument(editor.value);
+
+    preview.innerHTML=document.html;
+    preview.style.cssText=document.documentStyleText;
 
 }
 
@@ -1138,6 +1281,8 @@ fileInput.addEventListener(
 
 function exportHTML(){
 
+    const document=markdownToDocument(editor.value);
+
     const html=
 `<!DOCTYPE html>
 <html lang="en">
@@ -1212,9 +1357,9 @@ blockquote{
 
 </head>
 
-<body>
+<body${document.documentStyle}>
 
-${markdownToHTML(editor.value)}
+${document.html}
 
 </body>
 
